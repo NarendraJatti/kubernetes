@@ -1,0 +1,172 @@
+#commands
+
+IMP for kodekloud lab 
+==============
+controlplane ~ ✖ kubectl proxy
+Starting to serve on 127.0.0.1:8001
+controlplane ~ ➜  curl http://localhost:8001 -k
+
+
+==========
+kubectl api-resources (also you can shortname/shortcut)
+alias k = kubectl
+kubectl get all
+kubectl run nginx --image nginx
+kubectl describe pod nginx
+kubectl exec -it my-app-pod -- /bin/bash
+or
+kubectl exec -it my-app-pod -- /bin/sh
+
+kubectl exec webapp -- cat /log/app.log 
+
+kubectl expose deploy
+
+kubectl exec my-app-pod -- env | grep APP_ENV
+kubectl get pods
+kubectl get pods --selector app=db
+kubectl get pods -o wide
+kubectl apply -f replicatset.yaml
+kubectl replace -f replicatset.yaml
+or 
+kubectl scale --replicas=6 -f replicatset.yaml
+kubectl delete -f test.yaml 
+kubectl rollout status deployment/deployment-name
+kubectl rollout history deployment/deployment-name
+kubectl rollout undo deployment/deployment-name
+kubectl edit deployment/deployment-name(automaitcally recreates pods)
+kubectl create -f dep.yml --record
+kubectl get serviceaccount
+kube get pod pod-name -o yaml > pod.yaml 
+kubectl create token sa
+
+kubectl get deploy -A
+========================================
+Here are some of the commonly used formats:
+
+-o jsonOutput a JSON formatted API object.
+-o namePrint only the resource name and nothing else.
+-o wideOutput in the plain-text format with any additional information.
+-o yamlOutput a YAML formatted API object.
+
+kubectl create namespace test-123 --dry-run -o json
+
+kubectl taint nodes node1 app = blue:NoSchedule
+kubectl describe node kubemaster | grep Taint 
+kubectl run bee --image=nginx --dry-run=client -o  yaml 
+
+kubectl replace --force -f filename
+
+kubectl describe pod(for all pods)
+
+log
+======
+kubect logs objectname 
+kubectl logs -f pod 
+kubectl logs -f pod container-1name
+kubectl create -f .
+
+monitoring
+==============
+kubectl top node
+kubectl top pod   
+
+
+kubectl get pods --selector env=dev
+kubectl get pods --selector env=dev | wc -l
+kubectl get pods --selector env=dev --no-header | wc -l
+kubectl get all 
+kubectl get all --selector env=prod,bu=finance,tier=frontend
+kubectl get configmap coredns -n kube-system -o yaml
+
+
+Ingress
+=================
+kubectl get ingress -A
+
+
+Persiste volume(admin crates )
+==========
+kubectl get persistant volume 
+
+persistant volume claims (developer creates or uses )
+=============
+labels  and selector
+kubectl get persistantvolumeclaim 
+
+
+kubeconfig
+============
+kubectl config use-context research --kubeconfig /root/my-kube-config
+kubectl config current-context
+
+
+
+RBAC
+=========
+kubectl get nodes -as naren
+kubectl get roles
+kubectl get rolebindings 
+check acces:
+kubectl auth can-i create-deployments
+kubectl auth can-i create-deployments --as dev-user --namespace test --v=10(verbose)
+ k create clusterrole --help
+
+
+kubectl get clusterroles(not part any namespace-they are clusterwide)
+k get clusterrole --no-headers | wc -l
+kubectl get clusterrolebindings
+kubectl create clusterrolebinding --help
+
+
+kubectl api-resources (also you can shortname/shortcut)
+
+
+admission controllers 
+=======================
+kube-apiserver -h | grep enable-admission-plugins 
+kube-apiserver.service
+chek servies in linux 
+
+grep keyword /path of the file 
+ps -ef | grep kube-apiserver| grep admission-plugins
+
+
+custom resource definition
+========================== 
+
+
+
+
+
+
+
+
+
+
+==============================
+shell completion setting 
+alias k = kubectl
+k get all -A  
+ket get -n uat deployments.apps deployment-name -o yaml | grep replicas
+jsonpath command also u can use for filtering 
+k get events 
+k logs multicontaienr-pod -c container-name (-c for multicontaienr pod )
+k  logs -- label
+k logs logs-generator --since=5s
+k logs -n uat -l app=notes-app
+k  logs --follow or k logs -f 
+k logs --timestamps
+k exec -n dev container --ls or --cat /path 
+k exec -n dev -it -- /bin/bash
+k port-forward -n uat svc/svc-name 8080:80 >>curl localhost:8080>>alos check in brwoser with localhost 
+
+k auth whoami >>for check current logged in user 
+kubectl top  pods -n uat 
+k explain pods/deployment
+k explain pods.spec --recursive 
+k diff -f file.yaml (to check resource defined in yml and resource in the cluster-deployed)
+kubectl debug podname -it --image=busybox 
+k debug -it podname --image=busybox -- target=container
+
+
+ 

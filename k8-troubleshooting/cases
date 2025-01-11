@@ -1,0 +1,23 @@
+iamge pull errors
+=====================
+authorization error-pull access denied>>secrets not attached to pods
+wrong image(spelling/version/tags mistake)
+proxy issue-can not resolve the resgistry-network issue
+
+crashing pods>>crashloopbackoff
+===============
+permssion issue for executing a script (rebuild image with correct persmission and update replica image)
+application issue -status code other than 0
+missing enviromnet variables
+misssing volume mounts(not mounted-volume defined,but not mounted)
+OOM issue
+liveness probe failed(modify timeout,initaldelay values etc)
+pending pods
+===========
+taints 
+node affinity
+cpu resource constraints
+
+missing pods
+===========
+due pods hard limit set on the namespace
