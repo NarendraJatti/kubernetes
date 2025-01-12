@@ -6,7 +6,10 @@ controlplane ~ ✖ kubectl proxy
 Starting to serve on 127.0.0.1:8001
 controlplane ~ ➜  curl http://localhost:8001 -k
 
+k port-forward svc/sname localport:svcport
+curl localhost:localport (can we can check in browser also??using localhost)
 
+/searchword
 ==========
 kubectl api-resources (also you can shortname/shortcut)
 alias k = kubectl
@@ -19,7 +22,18 @@ kubectl exec -it my-app-pod -- /bin/sh
 
 kubectl exec webapp -- cat /log/app.log 
 
+kubectl delete pod -n dev v1-release-testing --grace-period=0 --force
+
+kubectl delete deploy webapp-color-v1 webapp-color-v2
+
+
+
+
 kubectl expose deploy
+
+Example of a DNS query inside a Kubernetes pod:
+
+nslookup my-service.default.svc.cluster.local will resolve to the IP address of the service my-service in the default namespace.
 
 kubectl exec my-app-pod -- env | grep APP_ENV
 kubectl get pods
@@ -69,14 +83,18 @@ monitoring
 ==============
 kubectl top node
 kubectl top pod   
-
-
+kubectl edit pod misconfigured-pod
+POD_NAME=$(kubectl get pods -l app=slim -o jsonpath='{.items[0].metadata.name}')
 kubectl get pods --selector env=dev
 kubectl get pods --selector env=dev | wc -l
 kubectl get pods --selector env=dev --no-header | wc -l
 kubectl get all 
 kubectl get all --selector env=prod,bu=finance,tier=frontend
 kubectl get configmap coredns -n kube-system -o yaml
+kubectl logs <pod_name> -c <container_name>
+kubectl logs <pod_name> --all-containers=true
+kubectl logs deployment/<deployment-name>
+kubectl logs -l app=<app_name>
 
 
 Ingress
@@ -165,8 +183,39 @@ kubectl top  pods -n uat
 k explain pods/deployment
 k explain pods.spec --recursive 
 k diff -f file.yaml (to check resource defined in yml and resource in the cluster-deployed)
+
+debug/ephermal containers
+===========================
 kubectl debug podname -it --image=busybox 
 k debug -it podname --image=busybox -- target=container
+k debug podname --image=busybox -it --copy-to=debugging-pod --share-process
+k get pods -n staging --watch 
+
+k edit resourcequota -n staging pod-quota
+kubectl auth can-i list pods --as=system:serviceaccount:production:app -n production
+k get endpoints
+
+curl -s https://icanhazdadjoke.com/
+
+network policy leaks
+=========================
+k exec -n qa-test frontend-app -it -- sh
+curl -I api-svc 
+telnet db-svc 3306(svc in same ns)
+telnet db-svc.staging.svc.cluster.local 3306( to ping to service in another name space)
+
+k get netpol -n qa-test db-np -o yaml 
+
+uname -  a
+
+ingress issues
+=================
+curl ingressip
+curl ingressip/path  or curl -v ingressip/path 
+k port-forward svc/techy-serive 4444:80
+curl localhost:4444 or curl localhost:4444/path 
 
 
- 
+
+ kubectl get sc
+kubectl get pvc app-storage -o yaml > app-storage.yaml

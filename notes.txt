@@ -1,3 +1,5 @@
+https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/
+
 cat crash-app.sh 
 kubectl exec --namespace=kube-public curl -- wget -qO- http://webapp-service.default.svc.cluster.local:8080/crash
 
@@ -6,3 +8,43 @@ for i in {1..20}; do
    kubectl exec --namespace=kube-public curl -- sh -c 'test=`wget -qO- -T 2  http://webapp-service.default.svc.cluster.local:8080/ready 2>&1` && echo "$test OK" || echo "Failed"';
    echo ""
 done
+
+Here are a few common scenarios to delete an object and apply it again for changes to take effect:
+
+Modifying the value of an existing label selector
+Changing volume specifications
+Applying changes to certain controllers
+Changing service selectors
+Changing resource constraints of a pod
+
+
+A CreateContainerError in Kubernetes typically occurs during the process
+
+Incorrect image specification
+Runtime error
+Insufficient resources
+Missing mounted object
+
+A. ClusterRoleBindings cannot reference Roles.
+Correct. ClusterRoleBindings are intended to bind ClusterRoles, not Roles. ClusterRoles are designed to grant permissions across the entire cluster or multiple namespaces, whereas Roles are namespace-specific.
+
+B. Creating the RoleBinding in a namespace other than the subjects’ allows the subject to have roles in other namespaces.
+Correct. When a RoleBinding is created in a namespace other than where the subjects are, it enables the subjects to have roles in namespaces other than their own.
+
+C. Adding the namespace under the roleRef in a RoleBinding allows binding subjects to roles in other namespaces.
+Incorrect. The roleRef in a RoleBinding does not allow for a namespace specification because RoleBindings cannot reference Roles outside their own namespace.
+
+D. RoleBindings and ServiceAccounts must exist in the same namespace.
+Incorrect. RoleBindings can be created in any namespace and can reference ServiceAccounts from any namespace.
+
+E. RoleBindings connect ClusterRoles, but they only give access to the namespace defined in the binding.
+Correct. RoleBindings connect ClusterRoles to subjects (users or service accounts), but they only grant access within the namespace specified in the binding, ensuring access control boundaries.
+
+A Network Policy is a namespaced resource.
+Network Policy can target pods not services.
+
+The correct answer is ReadWriteMany (RWX) because this access mode allows multiple Pods on different nodes to read and write to the same volume. 'ReadWriteOnce (RWO)' allows read/write access by a single node, and 'ReadOnlyMany (ROX)' allows multiple nodes to read but not write.
+
+
+A PVC can remain in the Pending state for several reasons. The requested storage class might not exist, meaning there is no provisioner available to create the PV. The access mode requested by the PVC might not match any available PV, making it impossible to bind. Additionally, the available PVs might have insufficient capacity to meet the PVC's request. Therefore, all these factors need to be considered when troubleshooting a PVC in the Pending state.
+
