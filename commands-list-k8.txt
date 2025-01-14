@@ -216,6 +216,14 @@ k port-forward svc/techy-serive 4444:80
 curl localhost:4444 or curl localhost:4444/path 
 
 
+k expose deployment first --name service1 --port 80
+
 
  kubectl get sc
-kubectl get pvc app-storage -o yaml > app-storage.yaml
+kubectl get pvc app-storage -o yaml > app-storage.yaml 
+
+Key Steps to Optimize PDBs for Cost Efficiency
+https://mail.google.com/mail/u/0/#inbox/FMfcgzQZSjbvtPzzBrvfPzRdSpZBpXWL
+Let’s zoom into Pod Disruption Budgets (PDBs) in the Kubernetes cost optimization context.
+kubectl top pods --namespace=techops-prod
+
