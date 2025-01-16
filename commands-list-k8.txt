@@ -9,6 +9,8 @@ controlplane ~ ➜  curl http://localhost:8001 -k
 k port-forward svc/sname localport:svcport
 curl localhost:localport (can we can check in browser also??using localhost)
 
+Hit the httpbin using a curl command to generate some traces (i.e curl <cluster-ip-of-svc>:<port>), you can identify the service IP by listing the services under default namespace (kubectl get svc). Access the Jaeger dashboard using Jaeger button on the top bar.
+
 /searchword
 ==========
 kubectl api-resources (also you can shortname/shortcut)

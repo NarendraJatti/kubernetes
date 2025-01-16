@@ -66,3 +66,16 @@ NodePort: Exposes the service on each Node’s IP at a static port.
 LoadBalancer: Exposes the service externally using a cloud provider's load balancer.
 ExternalName: Maps the service to a DNS name
 An Istio VirtualService is an abstraction provided by the Istio service mesh that allows advanced traffic management and routing within the mesh. It operates at a higher layer (Layer 7) than the Kubernetes Service (Layer 4), giving finer control over HTTP, gRPC, WebSocket, and TCP traffic.
+
+
+We have now configured an authorization policy to allow all GET requests from the demo-app namespace to the demo-api namespace. This means that any GET requests from any other namespace like default will be rejected. Lets try it out.
+
+There is an nginx deployment and service running under demo-api namespace. Identify the cluster IP of the service and carry out some tests.
+
+There is a curl pod running under the default and the demo-app namespaces. Identify the pod names and let's try to curl the nginx service (running under demo-api namespace) from both pods one by one to see the results. Use the below commands:
+
+a. kubectl exec <pod-name>  -c curl  -- curl -s <nginx-service-cluster-ip>
+
+b. kubectl exec <pod-name> -n demo-app -c curl -- curl -s <nginx-service-cluster-ip>
+
+Expected Results
