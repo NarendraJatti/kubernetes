@@ -2,6 +2,8 @@ https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annota
 
 Ingress controller=LB +APIGW
 
+
+
 Kube-proxy is an essential component in Kubernetes that handles the networking between services and pods. One of its primary responsibilities is ensuring that traffic destined for a Kubernetes Service is routed to the correct backend pod(s). To do this, it manages network rules, and one of the ways it achieves this is by updating iptables.
 
 cat crash-app.sh 
@@ -56,3 +58,11 @@ Identify workload waste and remove it safely
 Pinpoint and remediate issues causing latency and service disruption (OOM, CPU Throttling, Evictions)
 Evaluate the efficiency of Horizontal and Node Austoscalers (HPA, KEDA, Karpenter, Cluster Autoscaler)
 Select proper Node types based on utilization trends
+
+A Kubernetes Service provides a stable network endpoint for a set of Pods. It acts as an abstraction layer over the Pods and ensures that communication with the application is consistent, even when the underlying Pods are replaced or rescheduled.
+Types of Services:
+ClusterIP: Exposes the service internally within the cluster.
+NodePort: Exposes the service on each Node’s IP at a static port.
+LoadBalancer: Exposes the service externally using a cloud provider's load balancer.
+ExternalName: Maps the service to a DNS name
+An Istio VirtualService is an abstraction provided by the Istio service mesh that allows advanced traffic management and routing within the mesh. It operates at a higher layer (Layer 7) than the Kubernetes Service (Layer 4), giving finer control over HTTP, gRPC, WebSocket, and TCP traffic.

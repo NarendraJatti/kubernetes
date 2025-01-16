@@ -26,7 +26,7 @@ kubectl delete pod -n dev v1-release-testing --grace-period=0 --force
 
 kubectl delete deploy webapp-color-v1 webapp-color-v2
 
-
+cd /etc/kubernetes/manifests
 
 
 kubectl expose deploy
@@ -218,6 +218,7 @@ curl localhost:4444 or curl localhost:4444/path
 
 k expose deployment first --name service1 --port 80
 
+ kubectl get ep myapp(service-name)
 
  kubectl get sc
 kubectl get pvc app-storage -o yaml > app-storage.yaml 

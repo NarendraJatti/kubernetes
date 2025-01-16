@@ -1,0 +1,137 @@
+# v1 and v2 Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp
+  labels:
+    app: myapp
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+        version: v1
+    spec:
+      containers:
+      - name: myapp-container
+        image: myapp:v1
+        ports:
+        - containerPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp-v2
+  labels:
+    app: myapp
+    version: v2
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: myapp
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: myapp
+        version: v2
+    spec:
+      containers:
+      - name: myapp-container
+        image: myapp:v2
+        ports:
+        - containerPort: 8080
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp
+  labels:
+    app: myapp
+spec:
+  selector:
+    app: myapp
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+---
+# Istio Gateway
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: myapp-gateway
+spec:
+  selector:
+    istio: ingressgateway # Istio's ingress controller
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "myapp.example.com"
+---
+# VirtualService with Fault Injection, Timeout, and Retries
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: myapp-virtualservice
+spec:
+  hosts:
+  - "myapp.example.com"
+  gateways:
+  - myapp-gateway
+  http:
+  - fault:
+      delay:
+        percentage:
+          value: 50 # Delay 50% of the requests
+        fixedDelay: 5s # 5 seconds delay for affected requests
+      abort:
+        percentage:
+          value: 10 # Abort 10% of the requests
+        httpStatus: 400 # Return HTTP 400 for the aborted requests
+    retries:
+      attempts: 3 # Retry failed requests up to 3 times
+      perTryTimeout: 2s # Timeout for each retry attempt is 2 seconds
+      retryOn: "5xx" # Retry only on 5xx errors
+    timeout: 10s # Timeout for requests is 10 seconds
+    route:
+    - destination:
+        host: myapp #svc name
+        subset: v1
+      weight: 90
+    - destination:
+        host: myapp #svc name
+        subset: v2
+      weight: 10
+---
+# DestinationRule with Circuit Breakers
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: myapp-destinationrule
+spec:
+  host: myapp
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+    outlierDetection: # Circuit breaker settings
+      consecutive5xxErrors: 3 # Eject after 3 consecutive 5xx errors
+      interval: 10s # Check the health of hosts every 10 seconds
+      baseEjectionTime: 30s # Eject unhealthy hosts for 30 seconds
+      maxEjectionPercent: 50 # Eject up to 50% of the hosts
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+  - name: v2
+    labels:
+      version: v2

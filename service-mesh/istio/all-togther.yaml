@@ -1,0 +1,128 @@
+# v1 and v2 Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp
+  labels:
+    app: myapp
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+        version: v1 # Placeholder, will differentiate between v1 and v2 in containers
+    spec:
+      containers:
+      - name: myapp-container
+        image: myapp:v1
+        ports:
+        - containerPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp-v2
+  labels:
+    app: myapp
+    version: v2
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: myapp
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: myapp
+        version: v2
+    spec:
+      containers:
+      - name: myapp-container
+        image: myapp:v2
+        ports:
+        - containerPort: 8080
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp
+  labels:
+    app: myapp
+spec:
+  selector:
+    app: myapp
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+---
+# Istio Gateway
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: myapp-gateway
+spec:
+  selector:
+    istio: ingressgateway # Istio's ingress controller
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "myapp.example.com"
+---
+# VirtualService with Fault Injection
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: myapp-virtualservice
+spec:
+  hosts:
+  - "myapp.example.com"
+  gateways:
+  - myapp-gateway
+  http:
+  - fault:
+      delay:
+        percentage:
+          value: 50 # Delay 50% of the requests
+        fixedDelay: 5s # 5 seconds delay for affected requests
+      abort:
+        percentage:
+          value: 10 # Abort 10% of the requests
+        httpStatus: 400 # Return HTTP 400 for the aborted requests
+    route:
+    - destination:
+        host: myapp
+        subset: v1
+      weight: 90
+    - destination:
+        host: myapp
+        subset: v2
+      weight: 10
+    timeout: 3s
+---
+# DestinationRule
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: myapp-destinationrule
+spec:
+  host: myapp
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+  - name: v2
+    labels:
+      version: v2

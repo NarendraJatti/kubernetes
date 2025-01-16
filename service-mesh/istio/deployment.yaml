@@ -1,0 +1,48 @@
+# v1 and v2 Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp
+  labels:
+    app: myapp
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+        version: v1 # Placeholder, will differentiate between v1 and v2 in containers
+    spec:
+      containers:
+      - name: myapp-container
+        image: myapp:v1
+        ports:
+        - containerPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp-v2
+  labels:
+    app: myapp
+    version: v2
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: myapp
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: myapp
+        version: v2
+    spec:
+      containers:
+      - name: myapp-container
+        image: myapp:v2 # The image for version v2
+        ports:
+        - containerPort: 8080
