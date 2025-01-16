@@ -1,0 +1,28 @@
+# Now create a virtual service configuration for the httpbin service containing two route rules that allow traffic for paths /status and /delay.
+
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: httpbin-virtualservice
+spec:
+  hosts:
+  - "httpbin.example.com" # This is the host we want to route traffic for
+  gateways:
+  - httpbin-gateway # Reference to the Gateway created previously
+  http:
+  - match:
+    - uri:
+        prefix: "/status" # Rule for path /status
+    route:
+    - destination:
+        host: httpbin # The service name
+        port:
+          number: 8000 # The destination port
+  - match:
+    - uri:
+        prefix: "/delay" # Rule for path /delay
+    route:
+    - destination:
+        host: httpbin # The service name
+        port:
+          number: 8000 # The destination port

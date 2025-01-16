@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: my-virtualservice
+spec:
+  hosts:
+  - "myapp.example.com"
+  gateways:
+  - my-gateway # Route traffic coming through the gateway
+  http:
+  - route:
+    - destination:
+        host: myapp # Kubernetes service name
+        subset: v1
+      weight: 80
+    - destination:
+        host: myapp
+        subset: v2
+      weight: 20
