@@ -3,13 +3,14 @@ But we are using helm3
 https://helm.sh/docs/intro/cheatsheet/
 helm
 ======
-package/release manager for k8
+package/release manager for k8>>
 
 installation>>release 
 
 helm install>>deploy only
 
 artifacthub.io 
+=================
 bitnami helm repo 
 
 helm install wordpress
