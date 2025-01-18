@@ -1,0 +1,102 @@
+helm2 vs helm2
+But we are using helm3
+https://helm.sh/docs/intro/cheatsheet/
+helm
+======
+package/release manager for k8
+
+installation>>release 
+
+helm install>>deploy only
+
+artifacthub.io 
+bitnami helm repo 
+
+helm install wordpress
+helm upgrade wordpress
+helm rollback wordpress
+helm uninstall wordpress
+
+helm search hub wordpress
+
+helm repo add bitnami https://charts.bitnami.com/bitnami
+
+helm search repo wordpress
+helm repo list
+helm list>>check installed packages
+
+helm pull --untar bitnami/wordpress(only download-not install)
+
+helm install release-name chart-name
+helm install release-1 bitnami/wordpress
+
+helm install --verify chart-name
+
+helm create nginx-chart 
+cd 
+ls 
+
+helm search hub chart-name
+
+helm search hub consul | grep hashicorp
+
+helm repo add bitnami https://charts.bitnami.com/bitnami
+
+. helm search hub:
+Scope: Searches across the Artifact Hub, which contains Helm charts from multiple repositories and sources. Artifact Hub is a centralized place for discovering Helm charts, including those not yet added to your local repository list.
+
+helm search repo:
+Scope: Searches only within the Helm repositories that have been added to your local Helm client using helm repo add.
+
+helm install amaze-surf bitnami/apache
+
+helm repo list: Shows the repositories where Helm can fetch charts from (doesn’t include installed releases).
+helm list: Shows the installed Helm releases in your Kubernetes cluster.
+
+helm status amaze-surf
+
+helm pull bitnami/apache --untar
+
+Run the command helm list and check the number of installed nginx charts.
+Run the command helm uninstall <release-name> to uninstall the chart.
+
+helm repo remove hashicorp
+
+helm lint ./nginx-chart(char directory path)
+helm template ./nginx-chart(char directory path)(no release name)
+helm template ./nginx-chart(char directory path) --debug(no release name)
+helm template hello-word ./nginx-chart(char directory path)(with release name)
+helm template hello-word ./nginx-chart --dry-run(to catch k8 mainfests errors)
+
+
+packaging and signing charts before upload
+======================================
+helm package ./nginx-chart(char directory path)
+signing package
+================
+gpg --quick-generate-key "john smith"
+or gpg --full-generate-key "john smith"(for production)
+
+gpg --export-secret-keys >~/.gnupg/secring.gpg
+
+helm package --sign --key "john smith" --keyring ~/.gnupg/secring.gpg ./nginx-chart 
+
+gpg --list-keys
+
+sha256sum nginx-char-tar-filename
+
+helm verify chart-namt-tarfile
+
+
+gpg --export 'john smith' > mypublickey
+
+helm install --verify chart-name
+
+uploading charts
+=================
+helm repo index chart-name --url https://example.com(hub url)
+index.yaml 
+
+helm repo add our-cool-chart https://location-name-storage
+helm repo list
+helm install
