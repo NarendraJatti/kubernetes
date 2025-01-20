@@ -1,0 +1,61 @@
+git operators run in k8 cluster to monitor changes and pulls changes from git
+git repo-desired state
+k8 cluster-actual state
+git revert to do undo changes made 
+
+gitops principles
+================
+1)declarative yaml apprach(discourge imperative comands)
+2)git for version controller
+3) git operator pull changes from git
+4)reconcillation >>observe(git),diff(compares resources) and act
+
+Devops>>changes will be pushed to cluster
+Gitops>changes will be pulled(git operator) to cluster
+
+Argo Apps and project
+================
+https://argo-cd.readthedocs.io/en/stable/user-guide/commands/argocd_app_create/
+
+kubectl create namespace argocd
+
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/v2.4.11/manifests/install.yaml
+
+kubectl -n argocd get cm argocd-cm or
+ k get cm -n argocd 
+ kubectl -n argocd get svc argocd-server
+
+ k edit -n argocd svc argocd-server Or 
+ kubectl edit svc argocd-server -n argocd
+
+ kubectl -n argocd get secrets argocd-initial-admin-secret -o json | jq .data.password -r | tr -d '\n'  | base64 -d
+
+  kubectl -n argocd get secrets repo-1376608715 -o json | jq .data.url -r | base64 -d
+
+  curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/download/v2.4.11/argocd-linux-amd64
+chmod +x /usr/local/bin/argocd
+
+by default 3mins to reflect changes>>do hard refresh
+
+Argo cli
+===============
+curl -sSL -o argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+
+chmod +x argocd
+
+sudo mv argocd /usr/local/bin/
+
+argocd version
+
+kubectl get svc -n argocd
+
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+
+argocd app --help
+https://github.com/NarendraJatti/kubernetes
+# Create a directory app
+  argocd app create guestbook --repo https://github.com/NarendraJatti/kubernetes --path test --dest-namespace default --dest-server https://kubernetes.default.svc
+
+argocd app sync guestbook
+argocd app list
+
