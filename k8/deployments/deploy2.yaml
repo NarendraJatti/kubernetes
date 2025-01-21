@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+      - name: my-app-container
+        image: my-app-image
+        ports:
+        - containerPort: 8080
+        livenessProbe:
+          httpGet:
+            path: /healthz       # Liveness endpoint
+            port: 8080
+          initialDelaySeconds: 3  # Wait for 3 seconds before starting probes
+          periodSeconds: 3        # Probe every 3 seconds
+        readinessProbe:
+          httpGet:
+            path: /ready         # Readiness endpoint
+            port: 8080
+          initialDelaySeconds: 5  # Wait for 5 seconds before starting probes
+          periodSeconds: 5        # Probe every 5 seconds

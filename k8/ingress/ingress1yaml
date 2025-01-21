@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: myapp-ingress
+spec:
+  rules:
+  - host: "myapp.com"
+    http:
+      paths:
+      - path: /store
+        pathType: Exact  # Only matches exactly /store
+        backend:
+          service:
+            name: store-service
+            port:
+              number: 80
+      - path: /store/
+        pathType: Prefix  # Matches /store/, /store/item1, etc.
+        backend:
+          service:
+            name: store-service
+            port:
+              number: 80

@@ -1,0 +1,10 @@
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+kubectl get ingress
+k get ingressClass
+kubectl logs -n ingress-nginx <nginx-controller-pod-name>
+
+k get po -n ingress-nginx
+
+add ingress adrres(ip) in sudo vim /etc/hosts
+curl http://webapp.local(hostname)
+curl -s 192.168.219.138/first | grep "<h1>"

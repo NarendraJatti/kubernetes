@@ -1,0 +1,30 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: my-service
+spec:
+  hosts:
+    - my-service
+  http:
+    - route:
+        - destination:
+            host: my-service
+            subset: v1
+      timeout: 5s  # Set timeout to 5 seconds
+
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: my-service
+spec:
+  host: my-service
+  trafficPolicy:
+    connectionPool:
+      http:
+        maxRequestsPerConnection: 1
+    outlierDetection:
+      consecutive5xxErrors: 5
+      interval: 1s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50

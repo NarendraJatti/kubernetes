@@ -1,3 +1,11 @@
+https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annotations/
+
+Ingress controller=LB +APIGW
+
+
+
+Kube-proxy is an essential component in Kubernetes that handles the networking between services and pods. One of its primary responsibilities is ensuring that traffic destined for a Kubernetes Service is routed to the correct backend pod(s). To do this, it manages network rules, and one of the ways it achieves this is by updating iptables.
+
 cat crash-app.sh 
 kubectl exec --namespace=kube-public curl -- wget -qO- http://webapp-service.default.svc.cluster.local:8080/crash
 
@@ -6,3 +14,68 @@ for i in {1..20}; do
    kubectl exec --namespace=kube-public curl -- sh -c 'test=`wget -qO- -T 2  http://webapp-service.default.svc.cluster.local:8080/ready 2>&1` && echo "$test OK" || echo "Failed"';
    echo ""
 done
+
+Here are a few common scenarios to delete an object and apply it again for changes to take effect:
+
+Modifying the value of an existing label selector
+Changing volume specifications
+Applying changes to certain controllers
+Changing service selectors
+Changing resource constraints of a pod
+
+
+A CreateContainerError in Kubernetes typically occurs during the process
+
+Incorrect image specification
+Runtime error
+Insufficient resources
+Missing mounted object
+
+A. ClusterRoleBindings cannot reference Roles.
+Correct. ClusterRoleBindings are intended to bind ClusterRoles, not Roles. ClusterRoles are designed to grant permissions across the entire cluster or multiple namespaces, whereas Roles are namespace-specific.
+
+B. Creating the RoleBinding in a namespace other than the subjects’ allows the subject to have roles in other namespaces.
+Correct. When a RoleBinding is created in a namespace other than where the subjects are, it enables the subjects to have roles in namespaces other than their own.
+
+C. Adding the namespace under the roleRef in a RoleBinding allows binding subjects to roles in other namespaces.
+Incorrect. The roleRef in a RoleBinding does not allow for a namespace specification because RoleBindings cannot reference Roles outside their own namespace.
+
+D. RoleBindings and ServiceAccounts must exist in the same namespace.
+Incorrect. RoleBindings can be created in any namespace and can reference ServiceAccounts from any namespace.
+
+E. RoleBindings connect ClusterRoles, but they only give access to the namespace defined in the binding.
+Correct. RoleBindings connect ClusterRoles to subjects (users or service accounts), but they only grant access within the namespace specified in the binding, ensuring access control boundaries.
+
+A Network Policy is a namespaced resource.
+Network Policy can target pods not services.
+
+The correct answer is ReadWriteMany (RWX) because this access mode allows multiple Pods on different nodes to read and write to the same volume. 'ReadWriteOnce (RWO)' allows read/write access by a single node, and 'ReadOnlyMany (ROX)' allows multiple nodes to read but not write.
+
+
+A PVC can remain in the Pending state for several reasons. The requested storage class might not exist, meaning there is no provisioner available to create the PV. The access mode requested by the PVC might not match any available PV, making it impossible to bind. Additionally, the available PVs might have insufficient capacity to meet the PVC's request. Therefore, all these factors need to be considered when troubleshooting a PVC in the Pending state.
+
+Identify workload waste and remove it safely 
+Pinpoint and remediate issues causing latency and service disruption (OOM, CPU Throttling, Evictions)
+Evaluate the efficiency of Horizontal and Node Austoscalers (HPA, KEDA, Karpenter, Cluster Autoscaler)
+Select proper Node types based on utilization trends
+
+A Kubernetes Service provides a stable network endpoint for a set of Pods. It acts as an abstraction layer over the Pods and ensures that communication with the application is consistent, even when the underlying Pods are replaced or rescheduled.
+Types of Services:
+ClusterIP: Exposes the service internally within the cluster.
+NodePort: Exposes the service on each Node’s IP at a static port.
+LoadBalancer: Exposes the service externally using a cloud provider's load balancer.
+ExternalName: Maps the service to a DNS name
+An Istio VirtualService is an abstraction provided by the Istio service mesh that allows advanced traffic management and routing within the mesh. It operates at a higher layer (Layer 7) than the Kubernetes Service (Layer 4), giving finer control over HTTP, gRPC, WebSocket, and TCP traffic.
+
+
+We have now configured an authorization policy to allow all GET requests from the demo-app namespace to the demo-api namespace. This means that any GET requests from any other namespace like default will be rejected. Lets try it out.
+
+There is an nginx deployment and service running under demo-api namespace. Identify the cluster IP of the service and carry out some tests.
+
+There is a curl pod running under the default and the demo-app namespaces. Identify the pod names and let's try to curl the nginx service (running under demo-api namespace) from both pods one by one to see the results. Use the below commands:
+
+a. kubectl exec <pod-name>  -c curl  -- curl -s <nginx-service-cluster-ip>
+
+b. kubectl exec <pod-name> -n demo-app -c curl -- curl -s <nginx-service-cluster-ip>
+
+Expected Results

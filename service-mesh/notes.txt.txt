@@ -1,0 +1,93 @@
+North-south traffic>>outise world to inside
+east west traffic>>traffic between different services
+Envoy proxy>side car container>mTLS
+
+
+
+
+h2load for conncurrent load in istio 
+
+An Istio VirtualService is an abstraction provided by the Istio service mesh that allows advanced traffic management and routing within the mesh. It operates at a higher layer (Layer 7) than the Kubernetes Service (Layer 4), giving finer control over HTTP, gRPC, WebSocket, and TCP traffic.
+
+virtual servieces>define routing rules
+destination rules>applies routing polices after traffic is routed to a specific service(subsets are defined)
+ [versions(subsets) are defined in deployments(pods-laber)]
+
+https://raw.githubusercontent.com/istio/istio/release-1.24/samples/bookinfo/platform/kube/bookinfo.yaml
+
+istio verify --install
+istioctl analyze 
+kubectl get gateway
+
+important steps(refrence video/lab-istio Lab-destination rules)
+As before, let us export the values for the port and IP of the ingress gateway to be able to access the application via curl command.As before, let us export the values for the port and IP of the ingress gateway to be able to access the application via curl command.
+export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
+
+export INGRESS_HOST=$(kubectl get po -l istio=ingressgateway -n istio-system -o jsonpath='{.items[0].status.hostIP}')
+Now access the myapp service using curl as follows:
+curl -HHost:myapp.example.com "http://$INGRESS_HOST:$INGRESS_PORT/myapp"
+
+
+for below refer. v3.yaml for better understanding(alos lab virutal service)
+==========================================
+ VirtualServices in Istio are created on top of Kubernetes services, and they allow you to define more sophisticated traffic routing rules. To understand how a service like httpbin can have different paths like /status and /delay, let’s break it down step by step:
+  VirtualServices in Istio are created on top of Kubernetes services, and they allow you to define more sophisticated traffic routing rules. To understand how a service like httpbin can have different paths like /status and /delay, let’s break it down step by step:
+  t operates at Layer 7 (application layer), meaning it understands application-level protocols like HTTP and can route traffic based on the request path (e.g., /status or /delay).
+VirtualServices are placed on top of Kubernetes Services, enabling advanced routing such as path-based routing, traffic splitting, fault injection, retries, etc.
+
+First of all determine and set some environment variables using below given commands
+
+
+export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
+export SECURE_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
+export TCP_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="tcp")].nodePort}')
+export INGRESS_HOST=$(kubectl get po -l istio=ingressgateway -n istio-system -o jsonpath='{.items[0].status.hostIP}')
+
+Next, access the httpbin service using curl and hit the allowed paths
+
+
+curl -s -I -HHost:httpbin.example.com "http://$INGRESS_HOST:$INGRESS_PORT/status/200"
+or
+curl -s -I -HHost:httpbin.example.com "http://$INGRESS_HOST:$INGRESS_PORT/delay/5"
+
+Next, access the httpbin service using curl and hit some other path
+curl -s -I -HHost:httpbin.example.com "http://$INGRESS_HOST:$INGRESS_PORT/headers"
+
+curl -s -I -HHost:httpbin.example.com "http://$INGRESS_HOST:$INGRESS_PORT/html"(not accessible no /html path added)
+
+
+===============================================
+A Virtual Service defines how requests are routed to a service within the mesh. It controls traffic routing based on rules such as request path, headers, and other attributes. Virtual services allow fine-grained control over traffic behavior, like setting up:
+
+Load balancing policies
+Canary deployments
+Traffic splitting
+Fault injection
+
+
+
+A Destination Rule defines policies that apply to the traffic after it has been routed by a virtual service. It configures how the traffic should behave once it reaches its destination. This includes:
+
+Load balancing
+Connection pool settings
+Outlier detection (for unhealthy instances)
+Mutual TLS (mTLS) settings
+
+
+1. Circuit Breaker in Istio
+A Circuit Breaker is a pattern used to prevent a service from making requests to an overloaded or malfunctioning service. It helps to avoid cascading failures by automatically failing fast when a service is likely to be unhealthy, allowing it to recover gracefully.
+
+Istio implements circuit breakers using DestinationRules to control the behavior of traffic when a service is unavailable or unhealthy.
+
+A Timeout in Istio is used to control how long a service should wait for a response from another service before considering the request a failure. This helps ensure that requests do not hang indefinitely and allows for better control over the service's responsiveness.
+
+Timeouts are useful to avoid waiting for unresponsive services, thereby improving the overall performance and availability of your application.Timeout Configuration (in a VirtualService)
+
+Circuit Breaker: Primarily focused on protecting services from excessive load or repeated failures. It opens the circuit to prevent further traffic from hitting a failing service and allows it to recover.
+Timeout: Focuses on ensuring that requests don’t hang indefinitely by setting a specific time window for waiting for responses.
+Circuit Breaker: Helps prevent cascading failures and overloads by limiting the traffic to an unhealthy service.
+Timeout: Helps ensure that requests are not waiting too long for a response, improving the overall responsiveness of services.
+Mechanism:
+
+Circuit Breaker: Opens and closes based on the health of a service (e.g., number of 5xx errors or high latencies).
+Timeout: Simply cancels a request if a predefined time limit is exceeded, without affecting the health or state of the service.
