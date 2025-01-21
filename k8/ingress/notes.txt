@@ -1,3 +1,0 @@
-https://github.com/kodekloudhub/community-faq/blob/main/docs/how-tos/howto-install-ingress-on-kk-playground.md
-
-https://kodekloud.com/community/t/issue-in-configuring-ingress-path-based-routing/355780
