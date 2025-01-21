@@ -20,4 +20,92 @@ cpu resource constraints
 
 missing pods
 ===========
-due pods hard limit set on the namespace
+due to pods hard limit set on the namespace
+not defined service account referenced in pod
+
+schrodinger's deployment
+===========================
+same version in both deployments manifest-deployment yaml using common/same label(pod version)>>cause application behaviour issue
+
+create contianer errors
+==========================
+1)create contianerconfig error
+-secrets missing,missing configmap
+
+2)createcontainer error
+- no dommand specified-no entrypoint defined in images,or pod spec 
+
+3)run container error(crahsloop backoff)
+wrong or undefined command specified
+
+config out of date
+====================
+immutability of k8>>selecctor in deployment,pvc etc
+old configmaps,secrets>>deployment or pod needs to be restarted(dlete and recrate) to refelct changes
+reloader k8 controller solves this restart problem--we have to reloader annotation in yaml manifests
+
+endlessly terminating pods
+=========================
+use --force flag
+finalizer in spec (removing this label will delte resources)
+metadata:
+  name: my-deployment
+  finalizers:
+
+
+enableservice links(to avoid env varialbe injection into new services)
+==================
+long list of arguments/enviromnet variables
+printenv,after exec into pod
+pod spec>>enableServiceLinks: false(true by default)
+
+
+interns can your secrets!
+================
+common group(say dev) attached to intern(role)>leaking secrets
+use k auth can-i with v=10(verbosity)
+
+
+port mania
+=============
+k port-forward svc/sname localport:svcport
+curl localhost:localport 
+svc target port meniton one port value
+pod spec in deployment mention different value,causing issues..
+
+
+network policy leaks
+=========================
+k exec -n qa-test frontend-app -it -- sh
+curl -I api-svc 
+telnet db-svc 3306(svc in same ns)
+telnet db-svc.staging.svc.cluster.local 3306( to ping to service in another name space)
+
+k get netpol -n qa-test db-np -o yaml 
+
+uname -  a
+
+ingress issues
+=================
+curl ingressip
+curl ingressip/path  or curl -v ingressip/path 
+k port-forward svc/techy-serive 4444:80
+curl localhost:4444 or curl localhost:4444/path 
+
+
+multi attach volume errors(pods are scattered across nodes)
+=========================
+Multi-Attach error for volume
+Pod stuck in Pending/ContainerCreating state due to volume not being attached
+MountVolume.SetUp failed for volume "<volume-name>" : volume is already used by pod(s) <pod-name>
+ReadWriteOnce (RWO) by default, meaning they can only be attached to a single node (pod) at a time
+ ReadWriteMany (RWX) access mode, which allows multiple pods to attach the volume at the same time. Some examples of storage types that support RWX
+ f each pod needs its own volume, consider using StatefulSets instead of a Deployment. StatefulSets create unique, stable identities for each pod and assign them separate volumes, ensuring that each pod gets its own PersistentVolumeClaim (PVC). This avoids the issue of volume conflicts during rolling updates.
+ preStop lifecycle hook 
+ Ensuring Only One Pod is Updated at a Time (Preventing Volume Conflicts)
+
+
+ wrong/miss spelling in readinessprobe params
+ ===========================================
+ pods will not be receiving traffic 
+ typo error causes pvc pending state

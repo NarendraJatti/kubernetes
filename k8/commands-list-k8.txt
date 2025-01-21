@@ -6,7 +6,12 @@ controlplane ~ ✖ kubectl proxy
 Starting to serve on 127.0.0.1:8001
 controlplane ~ ➜  curl http://localhost:8001 -k
 
+k port-forward svc/sname localport:svcport
+curl localhost:localport (can we can check in browser also??using localhost)
 
+Hit the httpbin using a curl command to generate some traces (i.e curl <cluster-ip-of-svc>:<port>), you can identify the service IP by listing the services under default namespace (kubectl get svc). Access the Jaeger dashboard using Jaeger button on the top bar.
+
+/searchword
 ==========
 kubectl api-resources (also you can shortname/shortcut)
 alias k = kubectl
@@ -19,7 +24,34 @@ kubectl exec -it my-app-pod -- /bin/sh
 
 kubectl exec webapp -- cat /log/app.log 
 
+kubectl logs mysql-chart-85df475954-5x89t --previous(This will give you logs from the previous instance before it crashed. )
+
+kubectl describe pod mysql-chart-85df475954-5x89t
+sudo journalctl -u haproxy
+
+kubectl --namespace default port-forward $POD_NAME 8081:$CONTAINER_PORT
+Forwarding from 127.0.0.1:8081 -> 80
+Handling connection for 8081
+E0119 17:06:27.868689   32413 portforward.go:413] "Unhandled Error" err="an error occurred forwarding 8081 -> 80: error forwarding port 80 to pod da567e38535ba4dbd185e5b45110f7966e4cbc7183752d1ef88ec207b537bfb1, uid : failed to execute portforward in network namespace \"/var/run/netns/cni-4a27d71a-e076-877c-70a6-4d8a1c39d746\": failed to connect to localhost:80 inside namespace \"da567e38535ba4dbd185e5b45110f7966e4cbc7183752d1ef88ec207b537bfb1\", IPv4: dial tcp4 127.0.0.1:80: connect: connection refused IPv6 dial tcp6 [::1]:80: connect: connection refused "
+error: lost connection to pod
+
+kubectl exec -it $POD_NAME --namespace default -- /bin/sh
+netstat -tnlp
+
+ kubectl exec -it msql-chart-my-chart-bf9d568ff-4rgxf -- /bin/bash
+ mysql -u admin -p
+kubectl delete pod -n dev v1-release-testing --grace-period=0 --force
+
+kubectl delete deploy webapp-color-v1 webapp-color-v2
+
+cd /etc/kubernetes/manifests
+
+
 kubectl expose deploy
+
+Example of a DNS query inside a Kubernetes pod:
+
+nslookup my-service.default.svc.cluster.local will resolve to the IP address of the service my-service in the default namespace.
 
 kubectl exec my-app-pod -- env | grep APP_ENV
 kubectl get pods
@@ -69,14 +101,18 @@ monitoring
 ==============
 kubectl top node
 kubectl top pod   
-
-
+kubectl edit pod misconfigured-pod
+POD_NAME=$(kubectl get pods -l app=slim -o jsonpath='{.items[0].metadata.name}')
 kubectl get pods --selector env=dev
 kubectl get pods --selector env=dev | wc -l
 kubectl get pods --selector env=dev --no-header | wc -l
 kubectl get all 
 kubectl get all --selector env=prod,bu=finance,tier=frontend
 kubectl get configmap coredns -n kube-system -o yaml
+kubectl logs <pod_name> -c <container_name>
+kubectl logs <pod_name> --all-containers=true
+kubectl logs deployment/<deployment-name>
+kubectl logs -l app=<app_name>
 
 
 Ingress
@@ -110,6 +146,17 @@ check acces:
 kubectl auth can-i create-deployments
 kubectl auth can-i create-deployments --as dev-user --namespace test --v=10(verbose)
  k create clusterrole --help
+
+ paused deployment
+ ====================
+ kubectl rollout pause deployment my-app-deployment
+ kubectl edit deployment my-app-deployment
+
+kubectl rollout pause deployment my-app-deployment
+kubectl rollout resume deployment my-app-deployment
+
+kubectl rollout status deployment <deployment-name>
+
 
 
 kubectl get clusterroles(not part any namespace-they are clusterwide)
@@ -165,8 +212,48 @@ kubectl top  pods -n uat
 k explain pods/deployment
 k explain pods.spec --recursive 
 k diff -f file.yaml (to check resource defined in yml and resource in the cluster-deployed)
+
+debug/ephermal containers
+===========================
 kubectl debug podname -it --image=busybox 
 k debug -it podname --image=busybox -- target=container
+k debug podname --image=busybox -it --copy-to=debugging-pod --share-process
+k get pods -n staging --watch 
+
+k edit resourcequota -n staging pod-quota
+kubectl auth can-i list pods --as=system:serviceaccount:production:app -n production
+k get endpoints
+
+curl -s https://icanhazdadjoke.com/
+
+network policy leaks
+=========================
+k exec -n qa-test frontend-app -it -- sh
+curl -I api-svc 
+telnet db-svc 3306(svc in same ns)
+telnet db-svc.staging.svc.cluster.local 3306( to ping to service in another name space)
+
+k get netpol -n qa-test db-np -o yaml 
+
+uname -  a
+
+ingress issues
+=================
+curl ingressip
+curl ingressip/path  or curl -v ingressip/path 
+k port-forward svc/techy-serive 4444:80
+curl localhost:4444 or curl localhost:4444/path 
 
 
- 
+k expose deployment first --name service1 --port 80
+
+ kubectl get ep myapp(service-name)
+
+ kubectl get sc
+kubectl get pvc app-storage -o yaml > app-storage.yaml 
+
+Key Steps to Optimize PDBs for Cost Efficiency
+https://mail.google.com/mail/u/0/#inbox/FMfcgzQZSjbvtPzzBrvfPzRdSpZBpXWL
+Let’s zoom into Pod Disruption Budgets (PDBs) in the Kubernetes cost optimization context.
+kubectl top pods --namespace=techops-prod
+

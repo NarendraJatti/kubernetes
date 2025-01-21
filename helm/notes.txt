@@ -1,3 +1,15 @@
+https://github.com/LondheShubham153/kubestarter
+below link has simple project
+https://amanpathakdevops.medium.com/day-26-kubernetes-helm-helm-charts-chapter-1-46e23aba25e6
+
+What is Helm?
+Helm simplifies Kubernetes application management by using charts. Charts are packages of pre-configured Kubernetes resources. Think of Helm charts as templates for Kubernetes applications that can be customized to suit your needs.
+
+Key Features of Helm:
+Package Management: Install, upgrade, and manage Kubernetes applications.
+Release Management: Manage multiple versions of applications.
+Configuration Management: Customize applications with values files
+
 helm2 vs helm2
 But we are using helm3
 https://helm.sh/docs/intro/cheatsheet/
@@ -11,7 +23,42 @@ helm install>>deploy only
 
 artifacthub.io 
 =================
+
+helm repo add stable https://charts.helm.sh/stable
+helm repo list
+
+Get the default values for a chart:
+helm show values stable/mysql > my-values.yaml
+Install the chart using the customized values file:
+helm install my-mysql -f my-values.yaml stable/mysql
+
+helm create my-repo
+ tree my-repo
+ helm create my-chart
+helm status my-mysql
+helm create helloworld>>creating helloworld helm chart
+
+helm install thehelloworld ./helloworld
+
+helm package my-chart
+helm install my-release my-chart-0.1.0.tgz
+
+controlplane ~ ➜  export NODE_PORT=$(kubectl get --namespace default -o jsonpath="{.spec.ports[0].nodePort}" services thehelloworld)
+  export NODE_IP=$(kubectl get nodes --namespace default -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+
+helm uninstall thehelloworld
+helm upgrade thehelloworld helloworld(to re deploy changes)
+
+helm list -a(checking current REVISION)
+helm rollback thehelloworld 1(new revison will be created)
+helm install thehelloworld ./helloworld --debug --dry-run
+helm template helloworld(see k8 resources would be created by helm,template-preview)
+helm lint helloworld(validate charts)
+
+
 bitnami helm repo 
+
 
 helm install wordpress
 helm upgrade wordpress
@@ -101,3 +148,38 @@ index.yaml
 helm repo add our-cool-chart https://location-name-storage
 helm repo list
 helm install
+
+
+1. Get the application URL by running these commands:
+{{- if contains "NodePort" .Values.service.type }}
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "webapp.fullname" . }})
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+{{- else if contains "LoadBalancer" .Values.service.type }}
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch the status of by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "webapp.fullname" . }}'
+  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "webapp.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+  echo http://$SERVICE_IP:{{ .Values.service.port }}
+{{- else if contains "ClusterIP" .Values.service.type }}
+  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "webapp.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+  export CONTAINER_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+  echo "Visit http://127.0.0.1:8080 to use your application"
+  kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:$CONTAINER_PORT
+{{- end }}
+
+ helm install httpd webapp
+NAME: httpd
+LAST DEPLOYED: Sat Jan 18 03:36:02 2025
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+1. Get the application URL by running these commands:
+  export NODE_PORT=$(kubectl get --namespace default -o jsonpath="{.spec.ports[0].nodePort}" services my-webapp)
+  export NODE_IP=$(kubectl get nodes --namespace default -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+
+  mkdir /root/package
+cd /root/package/
+helm package /root/webapp-color

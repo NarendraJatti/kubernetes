@@ -52,6 +52,7 @@ kubectl get svc -n argocd
 kubectl port-forward svc/argocd-server -n argocd 8080:443
 
 argocd app --help
+
 https://github.com/NarendraJatti/kubernetes
 # Create a directory app
   argocd app create guestbook --repo https://github.com/NarendraJatti/kubernetes --path test --dest-namespace default --dest-server https://kubernetes.default.svc
