@@ -1,0 +1,47 @@
+
+dont' use environment variables
+IMP>>we can use config map to inject the code-say server.js for monitoring and obaservability
+use data of configamp as environment variables for your pods
+cm>>store data(non sensitive)
+secrets>sensitive>>encrpyt data at rest with RBAC  
+
+To use this ConfigMap in a pod, mount it as a volume in your pod spec. This allows the container to access the server.js file injected from the ConfigMap.
+
+Why Use Volumes and VolumeMounts?
+Dynamic Updates: If the ConfigMap changes, the mounted file will reflect those changes without restarting the Pod. However, your application needs to handle the dynamic reading of the file.
+No Pod Restart Needed: Unlike environment variables, changes to ConfigMap data in mounted volumes do not require recreating the Pod. The updated value will be available in the file on the mounted path.
+
+============
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-app
+spec:
+  containers:
+  - name: my-app-container
+    image: <aws_account_id>.dkr.ecr.<region>.amazonaws.com/<repository_name>:<tag>
+    ports:
+    - containerPort: 80
+  imagePullSecrets:
+  - name: ecr-registry-credentials
+
+
+ECR Token-Based Authentication
+Amazon Elastic Container Registry (ECR) uses token-based authentication to pull container images from private ECR repositories. When you use Kubernetes to deploy a pod that pulls images from ECR, Kubernetes needs access to the private ECR repository. Since ECR is a private registry, authentication is required to allow Kubernetes to pull the image.
+aws ecr get-login-password --region <region> | kubectl create secret docker-registry ecr-registry-credentials \
+  --docker-server=<aws_account_id>.dkr.ecr.<region>.amazonaws.com \
+  --docker-username=AWS \
+  --docker-password="$(aws ecr get-login-password --region <region>)" \
+  --docker-email=<your-email>
+
+imagePullSecrets: This refers to the secret (ecr-registry-credentials) that holds the ECR credentials for the image pull.
+Alternative: Using IAM Roles with IRSA
+You can also set up Kubernetes to authenticate to ECR using IAM roles via IAM Roles for Service Accounts (IRSA). This avoids the need to manually create imagePullSecrets. This method leverages IAM roles and service accounts to automatically handle ECR authentication without manually fetching tokens or creating Docker registry secrets.
+
+Approaches to Automating the Secret Update:
+Running this command manually every time the token expires is not practical. Instead, you can automate this process to keep the secret updated:
+
+CI/CD Pipeline Automation:
+
+If you use a CI/CD pipeline (e.g., Jenkins, GitLab CI, or AWS CodePipeline), you can include this command as part of your pipeline steps.
+Every time you deploy a new workload that uses ECR images, your CI/CD pipeline can automatically run the command to refresh the Kubernetes secret with a new ECR token.

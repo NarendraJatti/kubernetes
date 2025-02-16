@@ -2,7 +2,29 @@ https://kubernetes.github.io/ingress-nginx/user-guide/nginx-configuration/annota
 
 Ingress controller=LB +APIGW
 
+The kubelet is a critical component of Kubernetes that runs on every node in a Kubernetes cluster. Its main role is to manage the state of the node by interacting with the control plane components and ensuring that containers (pods) are running as expected.
 
+Here are the key responsibilities of the kubelet:
+
+Pod Management: The kubelet monitors pod specifications sent by the control plane (API server) and ensures that containers defined in the pod are running on the node.
+
+Container Management: It communicates with the container runtime (e.g., Docker, containerd) to start, stop, and manage the lifecycle of containers.
+
+Health Monitoring: The kubelet regularly checks the health of running pods and containers. It restarts containers if they crash or fail, based on the configuration (such as liveness and readiness probes).
+
+Node Registration: The kubelet registers the node with the Kubernetes control plane and reports the node’s status, including resource usage (CPU, memory, etc.) and conditions (e.g., DiskPressure, MemoryPressure).
+
+Resource Management: The kubelet enforces resource limits (CPU, memory) for containers, ensuring that the allocated resources are respected.
+
+Volume Management: The kubelet manages pod volumes, ensuring that the necessary storage resources are mounted into the pod’s containers.
+
+Node Labels and Taints: The kubelet applies and manages node labels and taints that affect pod scheduling decisions.
+
+Log Collection: It can be configured to collect and forward logs from containers to the centralized logging system.
+
+The kubelet does not manage containers directly. It works with the container runtime on the node to handle container operations.
+
+==========
 
 Kube-proxy is an essential component in Kubernetes that handles the networking between services and pods. One of its primary responsibilities is ensuring that traffic destined for a Kubernetes Service is routed to the correct backend pod(s). To do this, it manages network rules, and one of the ways it achieves this is by updating iptables.
 
@@ -76,6 +98,49 @@ There is a curl pod running under the default and the demo-app namespaces. Ident
 
 a. kubectl exec <pod-name>  -c curl  -- curl -s <nginx-service-cluster-ip>
 
-b. kubectl exec <pod-name> -n demo-app -c curl -- curl -s <nginx-service-cluster-ip>
+b. kube
+ctl exec <pod-name> -n demo-app -c curl -- curl -s <nginx-service-cluster-ip>
 
 Expected Results
+
+In Kubernetes, eBPF (extended Berkeley Packet Filter) has an important relationship with pods because eBPF programs can be used to monitor, secure, and manage network traffic and system behavior in pods, all while maintaining high performance
+eBPF working along with vpc cni attaching network policies for the pods
+Role of eBPF: eBPF can inspect and manipulate network traffic before it reaches the pod, allowing enforcement of Kubernetes NetworkPolicies without relying on traditional methods like iptables.
+eBPF can be used to:
+Enforce network security policies.
+Perform packet filtering.
+Monitor traffic flows across pods and services.
+Provide visibility into network traffic at a granular level (L3/L4/L7).
+
+iptables is a tool used to configure Linux kernel firewall rules, and it plays a significant role in Docker and Kubernetes networking.
+
+eBPF vs. iptables in Kubernetes:
+iptables: Traditional approach, used for years, but can have performance limitations due to the large number of rules that can accumulate in complex Kubernetes environments.
+eBPF: Newer, more efficient, and flexible approach. Tools like Cilium are replacing iptables with eBPF for tasks like routing, load balancing, and enforcing network policies because of its ability to execute directly in the kernel, reducing overhead and improving scalability.
+
+storage in eks:
+aws ebs csi driver
+k get storageclasses
+
+eks secret  store,csi secret store driver
+ vault,aws secret store,parameter store
+
+ Internally, Kubernetes uses kube-proxy to route the traffic from the worker node's port to the appropriate pod based on load balancing algorithms (like round-robin).
+ Key Differences:
+NodePort: You expose a specific port on each node and directly access nodes.
+LoadBalancer: Cloud provider’s load balancer abstracts away the nodes, and traffic is routed to the service’s public IP. Internally, the load balancer uses the NodePort to send traffic to the node, which kube-proxy handles and forwards to the pods.
+
+
+Karpenter
+===============
+pending unscheduleable pods.
+A PodDisruptionBudget (PDB) in Kubernetes is a policy that ensures a minimum number of pods are always available during voluntary disruptions, like node draining for maintenance, rolling updates, or cluster scaling
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: my-pdb
+spec:
+  minAvailable: 2  # At least 2 pods must always be available
+  selector:
+    matchLabels:
+      app: my-app  # The PDB will apply to pods with this label

@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nodejs-monitoring-pod
+spec:
+  containers:
+  - name: nodejs-container
+    image: node:14  # Node.js base image
+    volumeMounts:
+    - name: config-volume
+      mountPath: /usr/src/app/server.js  # Where the file is mounted in the container
+      subPath: server.js
+    command: ["node", "/usr/src/app/server.js"]  # Command to run the app
+  volumes:
+  - name: config-volume
+    configMap:
+      name: nodejs-app-config  # Reference to ConfigMap
+      items:
+      - key: server.js
+        path: server.js

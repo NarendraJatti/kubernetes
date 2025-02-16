@@ -1,22 +1,5 @@
-Bin packing of containers refers to the practice of optimizing resource usage when scheduling and placing containers (such as Docker containers) across a set of physical or virtual resources, such as nodes in a Kubernetes cluster. The goal is to pack or fit containers into the available computing resources (CPU, memory, storage) as efficiently as possible, minimizing wasted resources while ensuring containers get the resources they need to operate correctly.
-The term "bin packing" comes from a well-known algorithmic problem where the goal is to fit items of different sizes into a finite number of bins in the most efficient way, minimizing the number of bins used
-How It Works in Kubernetes
-In Kubernetes, the scheduler is responsible for bin packing. It looks at the resource requests of each container (like CPU and memory) and then tries to place the container onto the most appropriate node in the cluster, based on available resources. Kubernetes allows you to define:
-
-Requests: The minimum amount of CPU and memory the container requires.
-Limits: The maximum amount of resources the container can use.
-By defining these, Kubernetes can decide how to bin pack containers across the cluster.
-
-In summary, bin packing containers means efficiently placing containers on nodes to maximize resource utilization and minimize waste, akin to fitting items into bins in the classic bin packing
-
 #commands
 
-kubectl delete pods --all -n game-2048
-
-
-lables are also used in jenkins to match build agents server(on which build or pipeline runs)
-kubectl create -f service.yaml --dry-run=client
-kubectl config view
 IMP for kodekloud lab 
 ==============
 controlplane ~ ✖ kubectl proxy
@@ -208,8 +191,6 @@ custom resource definition
 
 
 ==============================
-labels>>tags for pods/resources
-
 shell completion setting 
 alias k = kubectl
 k get all -A  
@@ -275,31 +256,3 @@ Key Steps to Optimize PDBs for Cost Efficiency
 https://mail.google.com/mail/u/0/#inbox/FMfcgzQZSjbvtPzzBrvfPzRdSpZBpXWL
 Let’s zoom into Pod Disruption Budgets (PDBs) in the Kubernetes cost optimization context.
 kubectl top pods --namespace=techops-prod
-
-
-ETCDCTL_API=3 etcdctl get /registry/pods/default/nginx --prefix --keys-only
-ETCDCTL_API=3 etcdctl get /registry/pods/default/nginx
-
-kubectl -n kube-system exec -it etcd-<master-node> -- sh
-
-svc creations in backedn createes,kendpoint slices
-In Kubernetes, Endpoints and EndpointSlices are both used to track the IP addresses of the Pods that back a Service, allowing the Service to send traffic to the appropriate Pods. However, they have different purposes, designs, and benefits.
-k get endpointslieces
-
-k get po - o wide
-   apiVersion: v1
-   kind: ConfigMap
-   metadata:
-     name: aws-auth
-     namespace: kube-system
-   data:
-     mapRoles: |
-       - rolearn: arn:aws:iam::891377054545:role/eks-demo-node
-         username: system:node:{{EC2PrivateDNSName}}
-         groups:
-           - system:bootstrappers
-           - system:nodes
-# Add mapUsers as below (ARN can be get in the AWS CLI command result in the previous step):
-     mapUsers: |
-       - userarn: arn:aws:iam::891377054545:user/iamuser-eksuser
-         username: iamuser-eksuser

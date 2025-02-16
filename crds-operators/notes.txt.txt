@@ -1,0 +1,4 @@
+https://spacelift.io/blog/kubernetes-operator
+https://github.com/shabbirsaifee92/k8s-crds-operator/blob/main/operator/src/hooks/hook.sh
+https://github.com/flant/shell-operator
+https://github.com/zalando/postgres-operator

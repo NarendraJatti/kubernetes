@@ -1,0 +1,123 @@
+https://github.com/kodekloudhub/course-jenkins-project
+
+
+===================================
+In AWS ECS (Elastic Container Service), AWS does not manage worker nodes (EC2 instances) in the EC2 launch type. In this case, you're responsible for provisioning, scaling, and managing the EC2 instances (worker nodes) that run your containers.
+
+However, if you use the Fargate launch type, AWS manages the infrastructure for you. With Fargate, there are no worker nodes (EC2 instances) to manage, as AWS handles the underlying compute resources. You simply specify the CPU and memory requirements for your containers, and AWS automatically provisions the resources.
+
+To summarize:
+
+EC2 launch type: You manage worker nodes (EC2 instances).
+Fargate launch type: AWS manages the compute infrastructure, and there are no worker nodes to manage.
+
+
+ Ingress with Load Balancing:
+When you have multiple worker nodes, the Ingress will load balance the traffic across all the pods of the same app running on different nodes. The ingress controller uses the service (typically a ClusterIP or NodePort) for routing the traffic and load balancing.
+When you create an Ingress resource, it defines rules for routing external traffic to services inside the cluster. However, the actual routing and load balancing are done by an Ingress Controller, which is responsible for processing Ingress rules and managing traffic flow.
+The Ingress controller does not directly route traffic to the pods. Instead, it sends the incoming traffic to a Kubernetes Service that corresponds to the app (pods) you want to expose.
+The Service is the one responsible for maintaining a list of all the endpoints (pods) that match the service selector. These endpoints could be spread across multiple worker nodes.
+Each worker node in a Kubernetes cluster runs kube-proxy, which is responsible for load balancing traffic between different pods within a service.
+Kube-proxy sets up IP tables (or uses IPVS depending on the cluster configuration) to ensure that traffic received by the service is distributed evenly across all the pods. These pods can be on different worker nodes.
+So when the Ingress controller sends traffic to the service, kube-proxy routes the traffic to one of the available pods that are behind the service, ensuring load balancing.
+The Ingress controller sends traffic to the Kubernetes service, and the service’s kube-proxy selects a pod using round-robin (default) or other configured algorithms (depending on the service type and load balancer type).
+Even if the pods are spread across different worker nodes, kube-proxy ensures traffic is balanced across all available pods.
+balanced across all available pods.
+Example of the Flow:
+Let’s assume you have three worker nodes (Node A, Node B, Node C), each with a single pod of the same app.
+
+An Ingress controller (e.g., NGINX Ingress) is deployed in your cluster.
+You create an Ingress resource that routes HTTP traffic to a Kubernetes Service (e.g., a ClusterIP service) representing the pods of your app.
+When traffic hits the external endpoint (say my-app.example.com), the Ingress controller receives this traffic.
+The Ingress controller consults the Ingress rules and forwards the traffic to the appropriate Kubernetes Service for your app.
+The service uses kube-proxy to distribute the traffic across the pods running on Nodes A, B, and C. It forwards the request to one of the pods, ensuring load balancing based on the internal routing setup of Kubernetes.
+Summary of the Process:
+External Traffic → Hits the Ingress.
+Ingress → Forwards the traffic to the appropriate Kubernetes Service.
+Service (via kube-proxy) → Load balances traffic across the app’s pods (on any worker node).
+Pod → Handles the request.
+
+
+
+Kube-Proxy
+kube-proxy is a key component of the Kubernetes networking model, responsible for maintaining network rules on each node. It is the component that enables load balancing and routing for services within the cluster. kube-proxy runs on each node in the cluster and manages the following:
+
+Traffic routing: It ensures that traffic sent to a service is correctly routed to one of the associated pods, even if those pods are distributed across multiple nodes.
+Load balancing: kube-proxy handles load balancing across the pods that back a service, distributing traffic evenly.
+IP management: It ensures that the service’s virtual IP (cluster IP) can be accessed from any node in the cluster.
+
+How kube-proxy Works with Service:
+Service Creation:
+
+When a service is created, Kubernetes assigns it a cluster IP (virtual IP). This is a stable IP address that does not change, even if the underlying pods do.
+The service specifies which pods it selects via label selectors, allowing Kubernetes to associate the service with specific pods.
+Every service gets an associated list of endpoints, which are the IP addresses of the individual pods backing that service.
+kube-proxy’s Role:
+
+kube-proxy runs on every node and monitors the Kubernetes API for new services, pods, and endpoints.
+When a service is created or modified, kube-proxy sets up network rules on each node that allow traffic sent to the service IP to be forwarded to one of the associated pods (the endpoints).
+The way kube-proxy achieves this depends on the backend mode it uses (either iptables or IPVS).
+When the set of pods associated with a service changes (e.g., pods are added or removed, or their IPs change), kube-proxy automatically updates the network rules to reflect the new state.
+It ensures that traffic is always routed to healthy and running pods.
+
+
+
+ Service with Load Balancing:
+ Even if you don’t use Ingress, a Kubernetes Service (e.g., ClusterIP, NodePort, or LoadBalancer) automatically load balances traffic across all pods that match its selector.
+When you create a Service for your pods, Kubernetes uses a component called kube-proxy to route traffic to the pods, distributing requests evenly across all the pods on different nodes.
+The load balancing mechanism is internal and managed by Kubernetes; it can work even without Ingress by using internal Kubernetes mechanisms.
+
+ Ingress with Load Balancing:
+When you have multiple worker nodes, the Ingress will load balance the traffic across all the pods of the same app running on different nodes. The ingress controller uses the service (typically a ClusterIP or NodePort) for routing the traffic and load balancing.
+When you create an Ingress resource, it defines rules for routing external traffic to services inside the cluster. However, the actual routing and load balancing are done by an Ingress Controller, which is responsible for processing Ingress rules and managing traffic flow.
+The Ingress controller does not directly route traffic to the pods. Instead, it sends the incoming traffic to a Kubernetes Service that corresponds to the app (pods) you want to expose.
+The Service is the one responsible for maintaining a list of all the endpoints (pods) that match the service selector. These endpoints could be spread across multiple worker nodes.
+Each worker node in a Kubernetes cluster runs kube-proxy, which is responsible for load balancing traffic between different pods within a service.
+Kube-proxy sets up IP tables (or uses IPVS depending on the cluster configuration) to ensure that traffic received by the service is distributed evenly across all the pods. These pods can be on different worker nodes.
+So when the Ingress controller sends traffic to the service, kube-proxy routes the traffic to one of the available pods that are behind the service, ensuring load balancing.
+The Ingress controller sends traffic to the Kubernetes service, and the service’s kube-proxy selects a pod using round-robin (default) or other configured algorithms (depending on the service type and load balancer type).
+Even if the pods are spread across different worker nodes, kube-proxy ensures traffic is balanced across all available pods.
+balanced across all available pods.
+Example of the Flow:
+Let’s assume you have three worker nodes (Node A, Node B, Node C), each with a single pod of the same app.
+
+An Ingress controller (e.g., NGINX Ingress) is deployed in your cluster.
+You create an Ingress resource that routes HTTP traffic to a Kubernetes Service (e.g., a ClusterIP service) representing the pods of your app.
+When traffic hits the external endpoint (say my-app.example.com), the Ingress controller receives this traffic.
+The Ingress controller consults the Ingress rules and forwards the traffic to the appropriate Kubernetes Service for your app.
+The service uses kube-proxy to distribute the traffic across the pods running on Nodes A, B, and C. It forwards the request to one of the pods, ensuring load balancing based on the internal routing setup of Kubernetes.
+Summary of the Process:
+External Traffic → Hits the Ingress.
+Ingress → Forwards the traffic to the appropriate Kubernetes Service.
+Service (via kube-proxy) → Load balances traffic across the app’s pods (on any worker node).
+Pod → Handles the request.
+
+
+
+Kube-Proxy
+kube-proxy is a key component of the Kubernetes networking model, responsible for maintaining network rules on each node. It is the component that enables load balancing and routing for services within the cluster. kube-proxy runs on each node in the cluster and manages the following:
+
+Traffic routing: It ensures that traffic sent to a service is correctly routed to one of the associated pods, even if those pods are distributed across multiple nodes.
+Load balancing: kube-proxy handles load balancing across the pods that back a service, distributing traffic evenly.
+IP management: It ensures that the service’s virtual IP (cluster IP) can be accessed from any node in the cluster.
+
+How kube-proxy Works with Service:
+Service Creation:
+
+When a service is created, Kubernetes assigns it a cluster IP (virtual IP). This is a stable IP address that does not change, even if the underlying pods do.
+The service specifies which pods it selects via label selectors, allowing Kubernetes to associate the service with specific pods.
+Every service gets an associated list of endpoints, which are the IP addresses of the individual pods backing that service.
+kube-proxy’s Role:
+
+kube-proxy runs on every node and monitors the Kubernetes API for new services, pods, and endpoints.
+When a service is created or modified, kube-proxy sets up network rules on each node that allow traffic sent to the service IP to be forwarded to one of the associated pods (the endpoints).
+The way kube-proxy achieves this depends on the backend mode it uses (either iptables or IPVS).
+When the set of pods associated with a service changes (e.g., pods are added or removed, or their IPs change), kube-proxy automatically updates the network rules to reflect the new state.
+It ensures that traffic is always routed to healthy and running pods.
+
+
+
+ Service with Load Balancing:
+ Even if you don’t use Ingress, a Kubernetes Service (e.g., ClusterIP, NodePort, or LoadBalancer) automatically load balances traffic across all pods that match its selector.
+When you create a Service for your pods, Kubernetes uses a component called kube-proxy to route traffic to the pods, distributing requests evenly across all the pods on different nodes.
+The load balancing mechanism is internal and managed by Kubernetes; it can work even without Ingress by using internal Kubernetes mechanisms.

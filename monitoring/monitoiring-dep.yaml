@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodejs-monitoring-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nodejs-app
+  template:
+    metadata:
+      labels:
+        app: nodejs-app
+    spec:
+      containers:
+        - name: nodejs-container
+          image: node:14
+          volumeMounts:
+            - name: server-js-volume
+              mountPath: /usr/src/app/server.js
+              subPath: server.js
+          command: ["node", "/usr/src/app/server.js"]
+      volumes:
+        - name: server-js-volume
+          configMap:
+            name: server-js-configmap

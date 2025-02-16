@@ -1,0 +1,4 @@
+scrape_configs:
+  - job_name: 'nodejs-app'
+    static_configs:
+      - targets: ['nodejs-monitoring-pod:3000']  # Pod name and port

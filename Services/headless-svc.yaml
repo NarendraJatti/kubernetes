@@ -1,0 +1,20 @@
+#<PodName>.<ServiceName>.<Namespace>.svc.cluster.local
+
+Use Cases for Headless Services:
+Databases: Distributed databases like Cassandra, MongoDB, and others require nodes to communicate directly, and a headless service allows them to know each other's IPs.
+StatefulSets: With StatefulSets, each Pod is assigned a unique, stable identity. A headless service allows other Pods to communicate with each specific StatefulSet Pod using its stable hostname.
+Peer-to-Peer Applications: In applications where Pods need to communicate with each other directly (e.g., message queues, gossip protocols), headless services allow them to discover each other's IPs.
+
+=================
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-headless-service
+  namespace: default
+spec:
+  clusterIP: None  # This makes the service headless
+  selector:
+    app: my-app  # Selects the Pods labeled with 'app: my-app'
+  ports:
+    - port: 80     # The port that will be exposed
+      targetPort: 8080  # The port where the app runs inside the Pod

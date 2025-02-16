@@ -1,0 +1,20 @@
+# pod-using-configmap-with-volume.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: db-app
+spec:
+  containers:
+  - name: my-app-container
+    image: your-node-app-image  # Replace with your actual Node.js app image
+    command: ["node", "server.js"]
+    ports:
+    - containerPort: 8080
+    volumeMounts:
+    - name: config-volume
+      mountPath: /etc/config  # Mounting the ConfigMap here
+      readOnly: true
+  volumes:
+  - name: config-volume
+    configMap:
+      name: test-cm  # The ConfigMap to mount

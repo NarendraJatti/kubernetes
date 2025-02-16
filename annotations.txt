@@ -1,0 +1,193 @@
+these are helpful
+Annotations in Kubernetes manifests, including AWS EKS and Ingress, provide a flexible way to attach metadata to objects. Unlike labels, which are used for selecting and grouping objects, annotations do not have any direct effect on the behavior of the objects but are often used by external tools, controllers, or services to influence or configure specific behaviors.
+
+Annotations provide powerful, extensible mechanisms to fine-tune how Kubernetes resources interact with underlying infrastructure, external services, or monitoring tools.
+>>to define LB type,certificate,target type in AWS EKS
+
+1. Configuring Ingress Controllers
+Annotations on Ingress resources are widely used to configure the behavior of Ingress controllers (like NGINX, AWS ALB). For example, annotations can specify SSL/TLS settings, load balancing, session affinity, or redirect behavior.
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+
+
+2. AWS Load Balancer Configuration in EKS
+When using AWS EKS, annotations are used to customize the behavior of AWS resources like ELB (Elastic Load Balancer) created by Kubernetes services or Ingress. These annotations can control things like ELB type, security groups, and load balancer attributes.
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "http"
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "60"
+
+3. Pod Scheduling and Node Affinity
+Annotations can influence how pods are scheduled on nodes. While taints and tolerations or affinity are the primary mechanisms, annotations may provide additional or vendor-specific scheduling behavior, such as enabling certain features or reporting custom metrics.
+
+4. DNS Configuration for Services
+Annotations on Kubernetes services allow you to configure DNS behavior, such as external DNS settings when integrating with external DNS services (e.g., Route 53) or internal DNS resolution options.
+4. DNS Configuration for Services
+Annotations on Kubernetes services allow you to configure DNS behavior, such as external DNS settings when integrating with external DNS services (e.g., Route 53) or internal DNS resolution options.
+
+5. Monitoring and Observability (Prometheus, Datadog, etc.)
+Annotations are often used to configure metrics collection for monitoring systems like Prometheus or Datadog. These annotations help monitoring agents discover and scrape metrics from pods or services.
+
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8080"
+    prometheus.io/path: "/metrics"
+
+
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8080"
+    prometheus.io/path: "/metrics" .give detailed steps and example for this..let's say i have deployed this pod with nginx image..how the scraping also done or configured..
+ChatGPT said:
+ChatGPT
+To configure Prometheus scraping for an NGINX pod using the annotations provided in your example, you need to follow a few steps. These steps include:
+
+Deploying the NGINX pod with Prometheus scrape annotations
+Configuring Prometheus to scrape the metrics from the pod
+Exposing the metrics from NGINX (either using an exporter or custom configuration)
+Step 1: Deploy NGINX Pod with Prometheus Scrape Annotations
+The annotations you've provided will instruct Prometheus to scrape metrics from the pod. Here's how the pod manifest looks:
+
+yaml
+Copy
+Edit
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+  labels:
+    app: nginx
+  annotations:
+    prometheus.io/scrape: "true"              # Enable scraping for this pod
+    prometheus.io/port: "8080"                # Scrape from this port
+    prometheus.io/path: "/metrics"            # Scrape from this path
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    ports:
+    - containerPort: 8080                     # NGINX will serve on port 8080
+This pod is an NGINX container running on port 8080 with the annotations that tell Prometheus to scrape metrics from /metrics on that port.
+
+Step 2: Expose Metrics from NGINX
+By default, NGINX does not expose Prometheus-compatible metrics. You can use NGINX Prometheus Exporter to expose these metrics.
+
+a. Install NGINX Prometheus Exporter
+The NGINX Prometheus Exporter is a sidecar container that will gather NGINX metrics and expose them in a Prometheus-compatible format.
+
+Update your pod manifest to include the exporter:
+
+yaml
+Copy
+Edit
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+  labels:
+    app: nginx
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9113"                # The exporter exposes metrics on this port
+    prometheus.io/path: "/metrics"
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    ports:
+    - containerPort: 8080
+
+  - name: nginx-prometheus-exporter
+    image: nginx/nginx-prometheus-exporter:0.10.0
+    args:
+    - -nginx.scrape-uri=http://localhost:8080/stub_status
+    ports:
+    - containerPort: 9113                     # The exporter exposes metrics on port 9113
+Here’s how it works:
+
+The NGINX Prometheus Exporter container runs alongside the NGINX container and scrapes metrics from the NGINX status endpoint (http://localhost:8080/stub_status).
+The exporter exposes these metrics on port 9113, which Prometheus will scrape.
+Note: You need to enable the NGINX stub_status module, which exposes the status of NGINX (active connections, requests per second, etc.).
+
+To enable it, modify your NGINX configuration to include something like this:
+
+nginx
+Copy
+Edit
+server {
+    listen 8080;
+    location /stub_status {
+        stub_status on;
+        access_log off;
+    }
+}
+Step 3: Configure Prometheus to Scrape the Pod
+Now that you’ve deployed the NGINX pod with Prometheus scraping enabled, you need to configure Prometheus to scrape this pod's metrics.
+
+In your Prometheus configuration file (prometheus.yml), add a scrape job that matches the labels of the pod:
+
+yaml
+Copy
+Edit
+scrape_configs:
+  - job_name: 'nginx-pod'
+    kubernetes_sd_configs:
+      - role: pod
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: nginx
+Explanation:
+
+kubernetes_sd_configs enables service discovery for pods in Kubernetes.
+The relabel_configs ensures that only the pods with the label app: nginx are scraped.
+Prometheus automatically scrapes pods that match the job criteria, and since your pod has the annotations for scraping, Prometheus will scrape metrics from the NGINX Prometheus exporter running on port 9113 and path /metrics.
+Step 4: Verify Scraping in Prometheus
+Once you deploy the pod and configure Prometheus, access the Prometheus UI (typically at http://<prometheus-ip>:9090).
+In the Prometheus UI, go to Status -> Targets, and verify that your NGINX pod is listed as one of the scrape targets.
+If everything is set up correctly, Prometheus will start collecting metrics from the /metrics endpoint exposed by the NGINX Prometheus Exporter.
+Example of Metrics Exposed
+The metrics exposed by the exporter will include various NGINX-related data points, like:
+
+nginx_http_requests_total: Total number of HTTP requests.
+nginx_http_connections_active: Number of active connections.
+nginx_http_connections_accepted: Total number of accepted connections.
+You can now create Prometheus queries or Grafana dashboards to monitor your NGINX metrics.
+
+Summary
+Deploy NGINX pod with annotations to enable Prometheus scraping.
+Add NGINX Prometheus Exporter as a sidecar container to expose NGINX metrics.
+Update Prometheus configuration to scrape the NGINX pod's metrics.
+Verify in Prometheus that scraping is working.
+This setup gives you real-time monitoring of your NGINX pods using Prometheus.
+
+
+in promethues rules,we can define summary -using annotation in promethesu rule yaml
+
+
+
+
+
+
+
+
+
+
+
+
+
+Ch

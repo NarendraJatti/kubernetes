@@ -1,0 +1,18 @@
+# pod-using-configmap.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: db-app
+spec:
+  containers:
+  - name: my-app-container
+    image: your-node-app-image  # Replace with your actual Node.js app image
+    env:
+    - name: DB_PORT
+      valueFrom:
+        configMapKeyRef:
+          name: test-cm  # This references the ConfigMap created above
+          key: db-port
+    command: ["node", "server.js"]
+    ports:
+    - containerPort: 8080

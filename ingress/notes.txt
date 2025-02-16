@@ -1,3 +1,18 @@
+Ingress is just a configuration file. It doesn’t do anything on its own.
+
+It relies on an Ingress Controller to implement the rules.
+
+Popular Ingress Controllers:
+
+NGINX Ingress Controller: The most widely used Ingress Controller.
+
+Traefik: A modern, cloud-native Ingress Controller.
+
+HAProxy: Known for high performance.
+
+Istio Ingress Gateway: Part of the Istio service mesh, offering advanced traffic management and security features.
+
+
 https://github.com/kodekloudhub/community-faq/blob/main/docs/how-tos/howto-install-ingress-on-kk-playground.md
 
 https://kodekloud.com/community/t/issue-in-configuring-ingress-path-based-routing/355780
